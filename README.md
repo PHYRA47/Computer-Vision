@@ -1,6 +1,6 @@
 # 💻 Computer Vision Projects
 
-This repository houses a collection of projects exploring various concepts and techniques in computer vision. 
+This repository houses a collection assignments from the 3rd semester computer vision course of my Master's in Photonics for Security, Reliability, and Safety (PSRS) at UPEC University, Paris Est-Créteil
 
 ## 🎥 1. Meanshift Face Tracking
 
