@@ -23,6 +23,27 @@ This project implements face tracking using the Meanshift algorithm in OpenCV.
 
 The output video will show the original video with a rectangle tracking the face.
 
+## 🖼️ 2. GoogLeNet on Labeled Faces in the Wild (LFW) Dataset
+
+This project implements face recognition using the GoogLeNet architecture, tested on the Labeled Faces in the Wild (LFW) dataset.
+
+**How it Works:**
+
+1. **Dataset Preparation:** The LFW dataset is preprocessed and deep funneled for consistent alignment of facial features.
+2. **Model Architecture:** GoogLeNet, a convolutional neural network designed for image classification tasks, is employed for this project.
+3. **Training and Testing:** The network is trained on a subset of the LFW dataset and validated on unseen data. GPU acceleration is utilized for faster training.
+4. **Performance Evaluation:** Model performance is measured using accuracy and confusion matrices on the test dataset.
+5. **Implementation:** Includes setup for GPU usage, model training, and visualization of results.
+
+**Code Structure:**
+
+- **`cv_assignment2_googlenet.ipynb`:** Contains the full implementation, including data preprocessing, model training, and evaluation.
+
+**Example Output:**
+
+The project demonstrates the classification performance of GoogLeNet on recognizing faces in the LFW dataset, showcasing its capability in high-dimensional feature extraction.
+
+
 ## 📂 Repository Structure
 - Each session's project is stored in its respective folder with the code and resources.
 - Feel free to explore the individual assignments! 😎
