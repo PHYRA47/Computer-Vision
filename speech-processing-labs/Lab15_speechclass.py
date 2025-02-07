@@ -19,20 +19,20 @@ import soundfile as sf
 import matplotlib.pyplot as plt
 from tkinter import *
 import numpy as np
-import librosa
+# import librosa
 from IPython.lib.display import Audio
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
-N1=30
-N2=30
+N1=20
+N2=20
 X=np.zeros([N1+N2,28])
 y=np.zeros(N1+N2)
 #Starting recording for class1
 for i in range(N1):
     fs = 8000
-    duration = 1
+    duration = 1.2
     print('signal class 1:  ',i)
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
     sd.wait()
@@ -47,7 +47,7 @@ print('second class')
 for i in range(N2):
     print('signal class 2:  ', i)
     fs = 8000
-    duration = 1
+    duration = 1.2
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
     sd.wait()
     sd.stop()
@@ -58,6 +58,7 @@ for i in range(N2):
     y[i+N1]=1
 print(X.shape)
 print(y.shape)
+
 
 
 #here I have X and y
@@ -77,7 +78,7 @@ scaled_data = data_scaler.transform(X)
 pca = PCA(n_components = X.shape[1])
 pca.fit(scaled_data)
 Xprojected= pca.transform(scaled_data)
-"""
+
 print('variances=')
 print(pca.explained_variance_) # lambda or eigen values sorted
 print ('ratio=')
@@ -90,18 +91,61 @@ print ('eigen vectors=')
 print(pca.components_) #eigen vectors
 print ('sum of remaining variances=')
 print(pca.noise_variance_) #sum of remaining eigen value su
-"""
+
 #Part 3: Choose the components that fits to 90% of variances
-v=pca.explained_variance_ratio_
-plt.plot(v)
+v = pca.explained_variance_ratio_
+plt.figure(figsize=(10, 5))
+plt.plot(v, marker='o', linestyle='--', color='b')
+plt.title('Explained Variance Ratio by Principal Component')
+plt.xlabel('Principal Component')
+plt.ylabel('Explained Variance Ratio')
+plt.grid(True)
 plt.show()
-cv=v.cumsum()
-plt.plot(cv)
+
+cv = v.cumsum()
+plt.figure(figsize=(10, 5))
+plt.plot(cv, marker='o', linestyle='--', color='r')
+plt.title('Cumulative Explained Variance Ratio')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Cumulative Explained Variance Ratio')
+plt.axhline(y=0.90, color='g', linestyle='-')
+plt.grid(True)
 plt.show()
-nb=np.where(cv>=0.90)
-n=nb[0][1]
-print('n=',n)
-X=Xprojected[:,0:n]
+
+nb = np.where(cv >= 0.90)
+
+# Plot spectrogram of one element from each class
+plt.figure(figsize=(12, 6))
+
+# Spectrogram for class 1
+plt.subplot(1, 2, 1)
+f, t, Sxx = signal.spectrogram(X[0, :], fs)
+plt.pcolormesh(t, f, Sxx, shading='gouraud')
+plt.title('Spectrogram of Class 1')
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.colorbar()
+
+# Spectrogram for class 2
+plt.subplot(1, 2, 2)
+f, t, Sxx = signal.spectrogram(X[N1, :], fs)
+plt.pcolormesh(t, f, Sxx, shading='gouraud')
+plt.title('Spectrogram of Class 2')
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.colorbar()
+
+plt.tight_layout()
+plt.show()
+
+
+if len(nb[0]) > 1:
+    n = nb[0][1]
+else:
+    n = nb[0][0]  # or set a default value if not enough components
+print('n=', n)
+X = Xprojected[:, 0:n]
+
 #part 4: Divide the data into 30% test and 70% train
 
 X_train, X_test, y_train, y_test = (
@@ -118,12 +162,13 @@ print('score using perceptron:', score)
 
 #-5-2- FF using dense function
 input_shape = [X_train.shape[1]]
-Nbclasses=np.max(y)+1
+Nbclasses = int(np.max(y) + 1)  # Ensure Nbclasses is an integer
 clf = models.Sequential()
-clf.add(Dense(6, activation='sigmoid',input_shape=input_shape))
-clf.add(Dense(units=8, activation='sigmoid')),
-clf.add(Dense(units=3, activation='tanh')),
-clf.add(Dense(units=7, activation='linear')),
+clf.add(layers.Input(shape=input_shape))  # Use Input layer as the first layer
+clf.add(Dense(6, activation='sigmoid'))
+clf.add(Dense(units=8, activation='sigmoid'))
+clf.add(Dense(units=3, activation='tanh'))
+clf.add(Dense(units=7, activation='linear'))
 clf.add(Dense(Nbclasses, activation='softmax'))
 clf.summary()
 clf.compile(optimizer='rmsprop',
@@ -135,10 +180,10 @@ clf.fit(X_train, y_train,
         verbose=0,
          )
 pred = clf.predict(X_test)
-cpwi=pred.argmax(axis=1)
-print('confusion matrix using FF dense:\n',confusion_matrix(y_test, cpwi))
-test_loss= clf.evaluate(X_test, y_test)
-print('loss result using FF dense=',test_loss)
+cpwi = pred.argmax(axis=1)
+print('confusion matrix using FF dense:\n', confusion_matrix(y_test, cpwi))
+test_loss = clf.evaluate(X_test, y_test)
+print('loss result using FF dense=', test_loss)
 
 #5-3: FF using MLP function
 clf = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(3,3,10,10),
